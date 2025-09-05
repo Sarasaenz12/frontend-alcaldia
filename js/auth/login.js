@@ -4,30 +4,49 @@ document.getElementById('loginForm').addEventListener('submit', async function (
   const email = document.getElementById('email').value;
   const password = document.getElementById('password').value;
 
-  const response = await fetch('https://backend-alcaldia-5.onrender.com/api/auth/login/', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ email, password })
-  });
+  try {
+    console.log('Intentando login...'); 
+    
+    const response = await fetch('https://backend-alcaldia-5.onrender.com/api/auth/login/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: JSON.stringify({ 
+        username: 'admin', 
+        email: email,      
+        password: password 
+      })
+    });
 
-  if (response.ok) {
-    const data = await response.json();
-    console.log(data); //
-    const token = data.access;
-    const rol = data.user.role;
+    console.log('Response status:', response.status);
 
-    localStorage.setItem('token', token);
-    localStorage.setItem('rol', rol);
+    if (response.ok) {
+      const data = await response.json();
+      console.log('Login exitoso:', data);
+      
+      const token = data.access;
+      const rol = data.user.role || (data.user.is_staff ? 'admin' : 'funcionario');
 
-    // Redirige según el rol
-    if (rol === 'admin') {
-      window.location.href = 'admin/reporte.html';
-    } else if (rol === 'funcionario') {
-      window.location.href = 'funcionario/reporte.html';
+      localStorage.setItem('token', token);
+      localStorage.setItem('rol', rol);
+
+      // Redirigir según el rol
+      if (rol === 'admin' || data.user.is_staff) {
+        window.location.href = 'admin/reporte.html';
+      } else if (rol === 'funcionario') {
+        window.location.href = 'funcionario/reporte.html';
+      } else {
+        window.location.href = 'admin/reporte.html';
+      }
+    } else {
+      const errorText = await response.text();
+      console.error('Error de login:', response.status, errorText);
+      alert("Credenciales inválidas. Código: " + response.status);
     }
-  } else {
-    alert("Credenciales inválidas");
+  } catch (error) {
+    console.error('Error en la petición:', error);
+    alert("Error de conexión: " + error.message);
   }
 });
