@@ -14,7 +14,17 @@ document.getElementById('loginForm').addEventListener('submit', async function (
 
   if (response.ok) {
     const data = await response.json();
-    console.log(data); //
+    
+    // ===== DEBUG: VER QUÉ ESTÁ DEVOLVIENDO EL BACKEND =====
+    console.log('=== RESPUESTA COMPLETA DEL BACKEND ===');
+    console.log(data);
+    console.log('=== DATOS DEL USUARIO ===');
+    console.log('Email:', data.user?.email);
+    console.log('Role:', data.user?.role);
+    console.log('Is Superuser:', data.user?.is_superuser);
+    console.log('Is Staff:', data.user?.is_staff);
+    console.log('=== FIN DEBUG ===');
+    
     const token = data.access;
     const rol = data.user.role;
 
@@ -23,11 +33,17 @@ document.getElementById('loginForm').addEventListener('submit', async function (
 
     // Redirige según el rol
     if (rol === 'admin') {
+      console.log('Redirigiendo a panel admin');
       window.location.href = 'admin/reporte.html';
     } else if (rol === 'funcionario') {
+      console.log('Redirigiendo a panel funcionario');
       window.location.href = 'funcionario/reporte.html';
+    } else {
+      console.log('Rol desconocido:', rol);
+      alert('Rol de usuario desconocido: ' + rol);
     }
   } else {
+    console.log('Error en login:', response.status);
     alert("Credenciales inválidas");
   }
 });
